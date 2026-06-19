@@ -29,6 +29,8 @@ def build_embed(n: Notice, tags: dict, kind: str) -> dict:
     when = "오늘 마감" if dtc == 0 else (f"D-{dtc}" if dtc and dtc > 0 else "-")
 
     flags = []
+    if "청년" in n.title:               # 청년 명시 공고 = 24살 신청 적합 강한 신호
+        flags.append("🙋 청년 대상 명시")
     # 신축 여부 힌트 (API로 자동판별 불가 → '예비'는 사진으로 직접 확인)
     if "최초" in n.title:
         flags.append("🆕 신축 첫입주(확정)")
