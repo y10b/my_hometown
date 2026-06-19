@@ -15,6 +15,14 @@ ORANGE = 0xE67E22
 GREY = 0x95A5A6
 
 
+def _man(won: int) -> str:
+    """원 → 만원 단위 표기 (깔끔한 값은 정수, 아니면 소수 1자리)."""
+    m = won / 10000
+    if abs(m - round(m)) < 0.005:
+        return f"{round(m):,}만원"
+    return f"{m:,.1f}만원"
+
+
 def build_embed(n: Notice, tags: dict, kind: str) -> dict:
     units = "미확인 (공고에서 확인)" if n.supply_units is None else f"{n.supply_units}호"
     dtc = n.days_to_close()
@@ -48,9 +56,9 @@ def build_embed(n: Notice, tags: dict, kind: str) -> dict:
     if n.extra.get("area_text"):
         fields.append({"name": "면적", "value": n.extra["area_text"], "inline": True})
     if n.extra.get("deposit"):
-        fields.append({"name": "보증금", "value": f"{n.extra['deposit']:,}원", "inline": True})
+        fields.append({"name": "보증금", "value": _man(n.extra["deposit"]), "inline": True})
     if n.extra.get("rent"):
-        fields.append({"name": "월임대료", "value": f"{n.extra['rent']:,}원", "inline": True})
+        fields.append({"name": "월임대료", "value": _man(n.extra["rent"]), "inline": True})
     fields.append({"name": "신청", "value": f"[👉 바로 신청하러 가기]({n.url})", "inline": False})
 
     return {

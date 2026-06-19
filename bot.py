@@ -63,9 +63,10 @@ def collect(cfg: dict, use_sample: bool) -> list[Notice]:
     # 마이홈포털 통합 공고 (SH/GH/민간) — 활용신청+ENDPOINT 설정 시에만 동작, LH는 제외
     if not use_sample and cfg.get("myhome", {}).get("enabled"):
         try:
+            # 마이홈은 LH 공고가 앞쪽을 채워서, 비-LH(SH/GH/민간)까지 잡으려면 전량 수신
             notices += myhome_source.fetch_notices(
                 cfg.get("myhome", {}).get("service_key") or cfg["lh_service_key"],
-                page_size=cfg["poll"]["list_page_size"],
+                page_size=cfg.get("myhome", {}).get("page_size", 1000),
             )
         except Exception as ex:
             print(f"[myhome] 수집 실패(건너뜀): {repr(ex)[:120]}")

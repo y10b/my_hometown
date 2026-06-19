@@ -23,8 +23,8 @@
   },
 
   "myhome": {
-    "_comment": "마이홈포털 통합 공고(SH/GH/민간). 15108420 활용신청 + myhome_source.ENDPOINT 설정 후 enabled=true",
-    "enabled": false,
+    "_comment": "마이홈포털 통합 공고(SH/GH/민간/지자체). LH는 전용 어댑터가 처리하므로 제외.",
+    "enabled": true,
     "service_key": ""
   }
 }

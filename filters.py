@@ -66,10 +66,11 @@ def prefilter(notices: list[Notice], cfg: dict,
             continue
         if regions and not any(r in n.region for r in regions):
             continue
-        # 서울 근교만: 서울은 전부 통과, 그 외(경기 등)는 제목에 근교 도시명 있어야 통과
-        # (LH API 지역은 '경기도'까지만 줘서 시 단위는 제목으로 판별)
+        # 서울 근교만: 서울은 전부 통과, 그 외(경기 등)는 근교 도시명이 제목 또는 지역에 있어야 통과
+        # (LH API는 시도까지만 줘서 제목으로, 마이홈은 시군구를 줘서 지역으로 판별)
         if near_only and "서울" not in n.region:
-            if not any(c in n.title for c in near_cities):
+            hay = n.title + " " + n.region
+            if not any(c in hay for c in near_cities):
                 continue
         if exclude_kw and any(k in n.title for k in exclude_kw):       # 예비 등 제외(신축만)
             continue
