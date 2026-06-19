@@ -1,0 +1,48 @@
+name: happybot
+
+# 30분마다 실행 (마감 N시간 전 알림을 놓치지 않으려면 주기 폴링이 필요).
+# 주의: GitHub Actions 스케줄은 부하에 따라 수~수십 분 지연되거나 가끔 건너뜀(무료).
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}        # 수동 실행 버튼
+
+permissions:
+  contents: read
+
+concurrency:
+  group: happybot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul            # 마감시각 계산을 KST 기준으로 (러너 기본은 UTC)
+      LH_SERVICE_KEY: ${{ secrets.LH_SERVICE_KEY }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 직전 실행의 중복방지 상태(state.json) 복원
+      - name: Restore state
+        uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: happybot-state-${{ github.run_id }}
+          restore-keys: happybot-state-
+
+      - name: Run bot
+        run: python bot.py --once
+
+      # 갱신된 state.json 저장 (다음 실행에서 복원)
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state.json
+          key: happybot-state-${{ github.run_id }}

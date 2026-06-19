@@ -1,0 +1,24 @@
+{
+  "_comment": "비밀값(키/웹훅)은 config.local.json 또는 환경변수로. 이 파일은 깃에 올려도 안전.",
+  "lh_service_key": "",
+  "discord_webhook_url": "",
+
+  "filters": {
+    "house_type_keyword": "행복주택",
+    "min_supply_units": 6,
+    "big_supply_units": 10,
+    "closing_alert_hours": 3,
+    "assumed_close_time": "18:00",
+    "status_in": ["접수중"],
+    "regions": ["서울", "경기"],
+    "near_seoul_only": true,
+    "near_seoul_cities": ["고양", "성남", "부천", "광명", "과천", "안양", "의왕", "군포", "하남", "구리", "남양주", "의정부", "김포", "수원", "용인", "안산", "시흥", "양주"],
+    "exclude_title_keywords": [],
+    "exclude_house_type_keywords": ["신혼희망"]
+  },
+
+  "poll": {
+    "list_page_size": 100,
+    "lookback_days": 60
+  }
+}

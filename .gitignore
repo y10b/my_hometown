@@ -1,0 +1,8 @@
+# 비밀값 — 절대 커밋 금지
+config.local.json
+
+# 런타임 상태/캐시/임시
+state.json
+__pycache__/
+*.pyc
+_*.txt
