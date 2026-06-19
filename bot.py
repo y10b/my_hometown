@@ -25,6 +25,7 @@ except Exception:
 import detail
 import filters
 import lh_source
+import myhome_source
 import notify
 import store
 import supply
@@ -58,7 +59,16 @@ def collect(cfg: dict, use_sample: bool) -> list[Notice]:
             lookback_days=cfg["poll"]["lookback_days"],
         )
     notices = [from_lh(r) for r in rows]
-    # 향후: notices += sh_source.fetch(...) / gh_source.fetch(...) ...
+
+    # 마이홈포털 통합 공고 (SH/GH/민간) — 활용신청+ENDPOINT 설정 시에만 동작, LH는 제외
+    if not use_sample and cfg.get("myhome", {}).get("enabled"):
+        try:
+            notices += myhome_source.fetch_notices(
+                cfg.get("myhome", {}).get("service_key") or cfg["lh_service_key"],
+                page_size=cfg["poll"]["list_page_size"],
+            )
+        except Exception as ex:
+            print(f"[myhome] 수집 실패(건너뜀): {repr(ex)[:120]}")
     return notices
 
 
