@@ -87,7 +87,7 @@ def run(cfg: dict, *, use_sample: bool, dry: bool) -> None:
         detail.enrich(prelim, key)      # 정확한 접수마감일(시각은 가정값) + 당첨발표일
     candidates = filters.select_candidates(prelim, cfg, today)
 
-    print(f"[수집] 전체 {len(notices)}건 → 행복주택 {len(prelim)}건 → 최종 후보 {len(candidates)}건")
+    print(f"[수집] 전체 {len(notices)}건 → 대상유형 {len(prelim)}건 → 최종 후보 {len(candidates)}건")
 
     state = store.load()
     seen_new = set(state["seen_new"])

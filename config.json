@@ -4,7 +4,11 @@
   "discord_webhook_url": "",
 
   "filters": {
-    "house_type_keyword": "행복주택",
+    "_programs_comment": "대상 유형 규칙. house_type_any=세부유형명(AIS_TP_CD_NM) 포함, title_any=공고명 포함, *_not=제외. 매입임대는 세부유형이 전부 '매입임대'라 '청년'은 제목으로만 구분됨.",
+    "programs": [
+      { "label": "행복주택", "house_type_any": ["행복주택"], "house_type_not": ["신혼희망"] },
+      { "label": "청년매입임대", "house_type_any": ["매입임대"], "title_any": ["청년"] }
+    ],
     "min_supply_units": 6,
     "big_supply_units": 10,
     "closing_alert_hours": 3,

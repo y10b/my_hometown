@@ -18,8 +18,46 @@ from datetime import date, datetime
 from model import Notice
 
 
-def is_happy_house(n: Notice, keyword: str = "행복주택") -> bool:
-    return keyword in (n.house_type or "")
+# 기본 대상 유형 규칙 (config.json 의 filters.programs 가 있으면 그쪽이 우선)
+#   - house_type_any : 세부유형명(AIS_TP_CD_NM)에 이 중 하나가 포함되어야 함
+#   - house_type_not : 세부유형명에 이 중 하나라도 있으면 제외
+#   - title_any      : 공고명(title)에 이 중 하나가 포함되어야 함 (없으면 제목 조건 없음)
+#   - title_not      : 공고명에 이 중 하나라도 있으면 제외
+DEFAULT_PROGRAMS = [
+    {"label": "행복주택", "house_type_any": ["행복주택"], "house_type_not": ["신혼희망"]},
+    {"label": "청년매입임대", "house_type_any": ["매입임대"], "title_any": ["청년"]},
+]
+
+
+def _program_matches(n: Notice, p: dict) -> bool:
+    ht = n.house_type or ""
+    title = n.title or ""
+    if p.get("house_type_any") and not any(k in ht for k in p["house_type_any"]):
+        return False
+    if p.get("house_type_not") and any(k in ht for k in p["house_type_not"]):
+        return False
+    if p.get("title_any") and not any(k in title for k in p["title_any"]):
+        return False
+    if p.get("title_not") and any(k in title for k in p["title_not"]):
+        return False
+    return True
+
+
+def _programs(cfg: dict) -> list[dict]:
+    """대상 유형 규칙. filters.programs 가 있으면 사용, 없으면 옛 house_type_keyword 호환."""
+    f = cfg.get("filters", {})
+    progs = f.get("programs")
+    if progs:
+        return progs
+    kw = f.get("house_type_keyword")
+    if kw:
+        return [{"label": kw, "house_type_any": [kw]}]
+    return DEFAULT_PROGRAMS
+
+
+def is_wanted(n: Notice, cfg: dict) -> bool:
+    """행복주택 또는 청년매입임대 등 설정된 대상 유형 중 하나에 해당하면 True."""
+    return any(_program_matches(n, p) for p in _programs(cfg))
 
 
 def passes_supply_floor(n: Notice, min_units: int) -> bool:
@@ -51,7 +89,6 @@ def prefilter(notices: list[Notice], cfg: dict,
     """공급호수 조회 전에 값싼 조건(행복주택/미마감/지역)으로 먼저 좁힌다.
     → 공급정보 API를 행복주택 후보에만 호출해서 횟수를 아낀다."""
     f = cfg["filters"]
-    kw = f.get("house_type_keyword", "행복주택")
     regions = f.get("regions") or []
     status_in = f.get("status_in") or []
     near_only = f.get("near_seoul_only")
@@ -60,7 +97,7 @@ def prefilter(notices: list[Notice], cfg: dict,
     exclude_ht = f.get("exclude_house_type_keywords") or []
     out = []
     for n in notices:
-        if not is_happy_house(n, kw) or n.is_closed:
+        if not is_wanted(n, cfg) or n.is_closed:
             continue
         if status_in and n.status not in status_in:                   # 접수중만 등
             continue
@@ -85,13 +122,12 @@ def select_candidates(notices: list[Notice], cfg: dict,
     """전략 필터를 적용하고 '당첨 확률 높은 순'으로 정렬해 반환."""
     f = cfg["filters"]
     today = today or date.today()
-    kw = f.get("house_type_keyword", "행복주택")
     min_units = f.get("min_supply_units", 6)
     regions = f.get("regions") or []
 
     out = []
     for n in notices:
-        if not is_happy_house(n, kw):
+        if not is_wanted(n, cfg):
             continue
         if n.is_closed:
             continue
